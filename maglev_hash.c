@@ -142,12 +142,12 @@ maglev_new(const char **server, int server_size, int table_size)
     int *permutation;
     bool ret = false;
 
-    if ((mh = malloc(sizeof(struct maglev_hash) + sizeof(int) * table_size)) == NULL)
+    if ((mh = malloc(sizeof(struct maglev_hash) + sizeof(int) * table_size)) == NULL) {
         return NULL;
     }
 
     mh->table_size = table_size;
-    if ((permutation = maglev_permutation(server, server_size, table_size)) != NULL)
+    if ((permutation = maglev_permutation(server, server_size, table_size)) != NULL) {
         ret = maglev_population(mh->table, permutation, server_size, table_size);
         free(permutation);
     }
