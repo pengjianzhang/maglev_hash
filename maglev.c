@@ -65,11 +65,10 @@ struct maglev_hash {
     int  table[0];
 };
 
-
 static int*
 maglev_permutation(const char **server, int server_size, int table_size)
 {
-    int  i, j, size, name_len,  *permutation;
+    int  i, j, size, name_len, *permutation;
     uint32_t offset, skip;
     const char *name;
 
@@ -98,12 +97,11 @@ maglev_permutation(const char **server, int server_size, int table_size)
 static bool
 maglev_population(int *table, int *permutation, int server_size, int table_size)
 {
-    int i, j;
+    int i, j, pos, num;
     int *next;
-    int pos;
-    int num = 0;
     bool ret = false;
 
+    num = 0;
     next = calloc(server_size, sizeof(int));
     if (next == NULL) {
         return false;
@@ -114,22 +112,23 @@ maglev_population(int *table, int *permutation, int server_size, int table_size)
     }
 
     while (1) {
-            for (i = 0; i < server_size; i++) {
-                for (j = next[i]; j < table_size; j++) {
-                    pos = permutation[i*table_size + j];
-                    next[i]++;
-                    if (table[pos] == -1) {
-                        table[pos] = i; 
-                        num++;
-                        if (num == table_size) {
-                            ret = true;
-                            goto out;
-                        }
-                        break;
-                    } 
-                }
+        for (i = 0; i < server_size; i++) {
+            for (j = next[i]; j < table_size; j++) {
+                pos = permutation[i*table_size + j];
+                next[i]++;
+                if (table[pos] == -1) {
+                    table[pos] = i; 
+                    num++;
+                    if (num == table_size) {
+                        ret = true;
+                        goto out;
+                    }
+                    break;
+                } 
             }
+        }
     }
+
 out:
     free(next);
     return ret;
@@ -143,16 +142,12 @@ maglev_new(const char **server, int server_size, int table_size)
     int *permutation;
     bool ret = false;
 
-
-    mh = malloc(sizeof(struct maglev_hash) + sizeof(int) * table_size);
-    if (mh == NULL) {
+    if ((mh = malloc(sizeof(struct maglev_hash) + sizeof(int) * table_size)) == NULL)
         return NULL;
     }
 
     mh->table_size = table_size;
-
-    permutation = maglev_permutation(server, server_size, table_size);
-    if (permutation) {
+    if ((permutation = maglev_permutation(server, server_size, table_size)) != NULL)
         ret = maglev_population(mh->table, permutation, server_size, table_size);
         free(permutation);
     }
@@ -164,7 +159,6 @@ maglev_new(const char **server, int server_size, int table_size)
 
     return mh;
 }
-
 
 static void
 maglev_print(struct maglev_hash* mh)
